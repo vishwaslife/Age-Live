@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Age Calculator — Vishwas.Life</title>
+<style>
+:root{
+  --bg: linear-gradient(135deg,#ffecd2 0%, #fcb69f 100%);
+  --card: #ffffffee;
+  --accent: #ff6f61;
+  --muted: #666;
+}
+*{box-sizing:border-box;font-family: 'Segoe UI', Tahoma, sans-serif;}
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--bg);
+  padding:20px;
+}
+.card{
+  width:100%;
+  max-width:980px;
+  background:var(--card);
+  border-radius:16px;
+  padding:28px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.12);
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:20px;
+  animation: fadeIn 0.6s ease-out;
+}
+@keyframes fadeIn { from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);} }
+h1{margin:0 0 8px 0;color:var(--accent);font-size:2rem;}
+p.lead{margin:0 0 18px 0;color:var(--muted);}
+.controls{
+  background: linear-gradient(180deg,#fff,#f9f9f9);
+  padding:16px;
+  border-radius:12px;
+  animation: pop 0.28s ease-in-out;
+}
+@keyframes pop { from {transform:scale(0.98);} to {transform:scale(1);} }
+label{display:block;font-size:14px;color:#333;margin-bottom:6px;}
+input[type="date"], .btn{
+  width:100%;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  font-size:16px;
+}
+.row{display:flex;gap:8px;margin-top:12px;}
+.btn{
+  cursor:pointer;
+  background:var(--accent);
+  color:white;
+  border:none;
+  font-weight:700;
+  letter-spacing:0.2px;
+  transition: all 0.15s ease;
+  padding:10px 14px;
+  border-radius:10px;
+}
+.btn.secondary{background:transparent;color:var(--accent);border:1px solid var(--accent);}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.08);}
+.result{
+  padding:16px;
+  border-radius:12px;
+  background:linear-gradient(180deg,#fff,#fefefe);
+  min-height:240px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  justify-content:center;
+  text-align:center;
+}
+.big{font-size:28px;font-weight:800;color:var(--accent);}
+.small{color:var(--muted);font-size:14px;}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:6px;}
+.chip{
+  background:#fafafa;border-radius:10px;padding:14px;border:1px solid #f0f0f0;text-align:center;
+  transition: transform 0.18s;
+}
+.chip:hover{transform:scale(1.04);}
+.chip .num{font-size:18px;font-weight:800;color:#222;}
+.chip .lbl{font-size:12px;color:var(--muted);margin-top:6px;}
+.note{font-size:13px;color:#444;margin-top:8px}
+footer{grid-column:1/ -1;text-align:center;color:#555;font-size:13px;margin-top:12px;padding-top:10px;border-top:1px solid #eee;}
+footer a{color:var(--accent);text-decoration:none;font-weight:700;}
+@media (max-width:820px){ .card{grid-template-columns:1fr} }
+.badge{
+  position:fixed;right:18px;bottom:18px;background:var(--accent);color:#fff;padding:10px 14px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,0.12);font-weight:700;font-size:13px;cursor:pointer;
+}
+</style>
+</head>
+<body>
+<main class="card" role="main">
+  <section>
+    <h1 id="mainTitle">Age Calculator</h1>
+    <p class="lead">Enter your date of birth to see your exact age in years, months, days, hours, minutes, and seconds. Try Live mode to watch it tick!</p>
+
+    <div class="controls" aria-label="controls">
+      <label for="dob">Date of Birth</label>
+      <input id="dob" type="date" />
+
+      <div class="row" style="margin-top:12px;">
+        <button id="calc" class="btn">Calculate Age</button>
+        <button id="liveToggle" class="btn secondary">Start Live</button>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <button id="clear" class="btn secondary">Clear</button>
+        <button id="export" class="btn secondary">Copy Result</button>
+      </div>
+
+      <p class="note">Note: Future dates are not allowed. Click "Start Live" after selecting DOB to see a live ticking age.</p>
+    </div>
+  </section>
+
+  <aside>
+    <div class="result" id="resultBox" aria-live="polite">
+      <div>
+        <div class="small">Your age is:</div>
+        <div class="big" id="ageBig">—</div>
+        <div class="small" id="asOf">As of now</div>
+      </div>
+
+      <div class="grid" id="partsTop">
+        <div class="chip"><div class="num" id="years">—</div><div class="lbl">Years</div></div>
+        <div class="chip"><div class="num" id="months">—</div><div class="lbl">Months</div></div>
+        <div class="chip"><div class="num" id="days">—</div><div class="lbl">Days</div></div>
+        <div class="chip"><div class="num" id="totalDays">—</div><div class="lbl">Total Days</div></div>
+      </div>
+
+      <div class="grid" style="margin-top:8px" id="partsBottom">
+        <div class="chip"><div class="num" id="hours">—</div><div class="lbl">Hours</div></div>
+        <div class="chip"><div class="num" id="minutes">—</div><div class="lbl">Minutes</div></div>
+        <div class="chip"><div class="num" id="seconds">—</div><div class="lbl">Seconds</div></div>
+        <div class="chip"><div class="num" id="nextBday">—</div><div class="lbl">Days to Next Birthday</div></div>
+      </div>
+    </div>
+
+    <footer>
+      Made by <a id="vlink" href="https://vishwas.life" target="_blank" rel="noopener noreferrer">Vishwas.Life</a> | &copy; <span id="footerYear">2025</span> All Rights Reserved
+    </footer>
+  </aside>
+</main>
+
+<!-- optional quick-access badge (open the site link) -->
+<div class="badge" id="openV">Vishwas.Life</div>
+
+<script>
+/* ---------- Age calculation utils ---------- */
+function calculateAgeParts(birth, now){
+  if(!(birth instanceof Date) || isNaN(birth)) return null;
+  if (birth > now) return { future:true };
+
+  const diffMs = now - birth;
+  const totalSeconds = Math.floor(diffMs / 1000);
+  const totalMinutes = Math.floor(totalSeconds / 60);
+  const totalHours = Math.floor(totalMinutes / 60);
+  const totalDays = Math.floor(totalHours / 24);
+
+  let years = now.getFullYear() - birth.getFullYear();
+  let months = now.getMonth() - birth.getMonth();
+  let days = now.getDate() - birth.getDate();
+
+  if (days < 0){
+    const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0); // last day of prev month
+    days += prevMonth.getDate();
+    months -= 1;
+  }
+  if (months < 0){
+    months += 12;
+    years -= 1;
+  }
+
+  // Days to next birthday
+  let nextBday = new Date(now.getFullYear(), birth.getMonth(), birth.getDate());
+  // preserve time-of-day by using midnight calculation consistently
+  if (nextBday <= now) nextBday = new Date(now.getFullYear() + 1, birth.getMonth(), birth.getDate());
+  const daysToNext = Math.ceil((nextBday - now) / (1000*60*60*24));
+
+  return {
+    years, months, days,
+    totalDays,
+    totalHours, totalMinutes, totalSeconds,
+    daysToNext,
+    future:false
+  };
+}
+
+/* ---------- DOM ---------- */
+const dob = document.getElementById('dob');
+const calcBtn = document.getElementById('calc');
+const liveBtn = document.getElementById('liveToggle');
+const clearBtn = document.getElementById('clear');
+const exportBtn = document.getElementById('export');
+const ageBig = document.getElementById('ageBig');
+const asOf = document.getElementById('asOf');
+const yearsEl = document.getElementById('years');
+const monthsEl = document.getElementById('months');
+const daysEl = document.getElementById('days');
+const totalDaysEl = document.getElementById('totalDays');
+const hoursEl = document.getElementById('hours');
+const minutesEl = document.getElementById('minutes');
+const secondsEl = document.getElementById('seconds');
+const nextBdayEl = document.getElementById('nextBday');
+const mainTitle = document.getElementById('mainTitle');
+const footerYear = document.getElementById('footerYear');
+const openV = document.getElementById('openV');
+
+let liveInterval = null;
+
+/* set current copyright year */
+footerYear.textContent = new Date().getFullYear();
+
+/* render function */
+function renderParts(parts, now){
+  if(!parts) return;
+  if(parts.future){
+    ageBig.textContent = "Invalid — Future date!";
+    asOf.textContent = "";
+    [yearsEl, monthsEl, daysEl, totalDaysEl, hoursEl, minutesEl, secondsEl, nextBdayEl].forEach(el => el.textContent = "—");
+    mainTitle.textContent = "Age Calculator";
+    return;
+  }
+  ageBig.textContent = `${parts.years}y ${parts.months}m ${parts.days}d`;
+  asOf.textContent = `As of ${now.toLocaleString()}`;
+  yearsEl.textContent = parts.years;
+  monthsEl.textContent = parts.months;
+  daysEl.textContent = parts.days;
+  totalDaysEl.textContent = parts.totalDays;
+  hoursEl.textContent = parts.totalHours;
+  minutesEl.textContent = parts.totalMinutes;
+  secondsEl.textContent = parts.totalSeconds;
+  nextBdayEl.textContent = parts.daysToNext;
+
+  if(parts.daysToNext === 0){
+    mainTitle.textContent = "🎉 Happy Birthday! 🎂";
+    // small celebration: quick subtle confetti using emojis (non-blocking)
+    celebrateTiny();
+  } else {
+    mainTitle.textContent = "Age Calculator";
+  }
+}
+
+/* calculate & show */
+function calculateAndShow(){
+  if(!dob.value){
+    alert("Please select your date of birth.");
+    return;
+  }
+  const b = new Date(dob.value + "T00:00:00");
+  const now = new Date();
+  const parts = calculateAgeParts(b, now);
+  renderParts(parts, now);
+}
+
+/* event listeners */
+calcBtn.addEventListener('click', e => { e.preventDefault(); stopLive(); calculateAndShow(); });
+clearBtn.addEventListener('click', e => {
+  e.preventDefault();
+  dob.value = "";
+  stopLive();
+  ageBig.textContent = "—";
+  mainTitle.textContent = "Age Calculator";
+  [yearsEl, monthsEl, daysEl, totalDaysEl, hoursEl, minutesEl, secondsEl, nextBdayEl].forEach(el => el.textContent = "—");
+  asOf.textContent = "";
+});
+exportBtn.addEventListener('click', e => {
+  e.preventDefault();
+  const text = `Age: ${ageBig.textContent}\n${asOf.textContent}\nYears: ${yearsEl.textContent}, Months: ${monthsEl.textContent}, Days: ${daysEl.textContent}\nTotal days: ${totalDaysEl.textContent}`;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(()=> alert("Result copied to clipboard!")).catch(()=> prompt("Copy this:", text));
+  } else {
+    prompt("Copy this:", text);
+  }
+});
+
+/* live mode */
+function startLive(){
+  if(!dob.value){
+    alert("Select your date of birth first.");
+    return;
+  }
+  stopLive();
+  liveBtn.textContent = "Stop Live";
+  liveBtn.classList.add('active');
+  const b = new Date(dob.value + "T00:00:00");
+  liveInterval = setInterval(() => {
+    const now = new Date();
+    renderParts(calculateAgeParts(b, now), now);
+  }, 1000);
+}
+function stopLive(){
+  if(liveInterval){
+    clearInterval(liveInterval);
+    liveInterval = null;
+    liveBtn.textContent = "Start Live";
+    liveBtn.classList.remove('active');
+  }
+}
+liveBtn.addEventListener('click', e => { e.preventDefault(); liveInterval ? stopLive() : startLive(); });
+
+dob.addEventListener('change', () => { calculateAndShow(); });
+
+/* small celebration — quick confetti with emojis for a short time */
+function celebrateTiny(){
+  // create a temporary floating emoji for a quick visual
+  const emojis = ['🎉','🎂','✨','🥳'];
+  for(let i=0;i<12;i++){
+    const el = document.createElement('div');
+    el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    Object.assign(el.style,{
+      position:'fixed',
+      left:(20 + Math.random()*60) + '%',
+      top:(10 + Math.random()*60) + '%',
+      fontSize: (12 + Math.random()*24) + 'px',
+      opacity: 1,
+      pointerEvents:'none',
+      transform: `translateY(-10px)`,
+      transition: 'transform 900ms cubic-bezier(.2,.8,.2,1), opacity 900ms'
+    });
+    document.body.appendChild(el);
+    setTimeout(()=> el.style.transform = `translateY(${120 + Math.random()*80}px)`, 20);
+    setTimeout(()=> el.style.opacity = '0', 700);
+    setTimeout(()=> el.remove(), 1200);
+  }
+}
+
+/* quick-access badge opens Vishwas.Life in new tab */
+openV.addEventListener('click', () => {
+  window.open('https://vishwas.life','_blank','noopener');
+});
+
+/* keyboard: Enter triggers calculate when date input focused */
+dob.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') { e.preventDefault(); calculateAndShow(); }
+});
+</script>
+</body>
+</html>
